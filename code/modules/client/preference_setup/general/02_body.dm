@@ -79,13 +79,12 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 	if(!pref.bgstate || !(pref.bgstate in pref.bgstate_options))
 		pref.bgstate = "black"
 
-/datum/category_item/player_setup_item/physical/body/content(mob/user)
+/datum/category_item/player_setup_item/physical/body/content(var/mob/user)
 	if(!pref.preview_icon)
 		pref.update_preview_icon()
 	user << browse_rsc(pref.preview_icon, "previewicon.png")
 
 	var/datum/species/mob_species = all_species[pref.species]
-	. += "<b>Species:</b> <a href='?src=\ref[src];set_species=1'>[mob_species.name]</a><br>"
 	. += "<style>span.color_holder_box{display: inline-block; width: 20px; height: 8px; border:1px solid #000; padding: 0px;}</style>"
 	. += "<hr>"
 	. += "<table><tr style='vertical-align:top; width: 100%'><td width=65%><b>Body</b> "
@@ -96,8 +95,7 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 
 	. += "Base Colour: <a href='?src=\ref[src];base_skin=1'>[pref.s_base]</a><br>"
 
-	if(has_flag(mob_species, HAS_SKIN_TONE))
-		. += "Skin Tone: <a href='?src=\ref[src];skin_tone=1'>[-pref.s_tone + 35]/220</a><br>"
+	. += "Skin Tone: <a href='?src=\ref[src];skin_tone=1'>[-pref.s_tone + 35]/220</a><br>"
 
 	. += "Needs Glasses: <a href='?src=\ref[src];disabilities=[NEARSIGHTED]'><b>[pref.disabilities & NEARSIGHTED ? "Yes" : "No"]</b></a><br><br>"
 
@@ -106,10 +104,9 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 	if(has_flag(mob_species, HAS_HAIR_COLOR))
 		. += "<a href='?src=\ref[src];hair_color=1'><span class='color_holder_box' style='background-color:[pref.hair_color]'></span></a><br>"
 
-	mob_species = all_species[pref.species]
 	. += "<br><b>Facial:</b><br>"
 	. += " Style: <a href='?src=\ref[src];cycle_facial_hair=right'>&lt;&lt;</a><a href='?src=\ref[src];cycle_facial_hair=left'>&gt;&gt;</a><a href='?src=\ref[src];facial_style=1'>[pref.f_style]</a>"
-	if(has_flag(mob_species, HAS_FACIAL_COLOR))
+	if(has_flag(mob_species, HAS_HAIR_COLOR))
 		. += "<a href='?src=\ref[src];facial_color=1'><span class='color_holder_box' style='background-color:[pref.facial_color]'></span></a><br>"
 
 	if(has_flag(mob_species, HAS_EYE_COLOR))
@@ -130,7 +127,7 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 
 
 
-/datum/category_item/player_setup_item/physical/proc/has_flag(var/datum/species/mob_species, var/flag)
+/datum/category_item/player_setup_item/physical/body/proc/has_flag(var/datum/species/mob_species, var/flag)
 	return mob_species && (mob_species.appearance_flags & flag)
 
 /datum/category_item/player_setup_item/physical/body/OnTopic(var/href,var/list/href_list, var/mob/user)
@@ -161,15 +158,23 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 			pref.b_type = new_b_type
 			return TOPIC_REFRESH
 
+	/*else if(href_list["show_species"])
+		var/choice = input("Which species would you like to look at?") as null|anything in playable_species
+		if(choice)
+			var/datum/species/current_species = all_species[choice]
+			user << browse(current_species.get_description(), "window=species;size=700x400")
+			return TOPIC_HANDLED
+
 	else if(href_list["set_species"])
+
 		var/list/species_to_pick = list()
 		for(var/species in playable_species)
-			if(!check_rights(R_ADMIN, 0))
+			if(!check_rights(R_ADMIN, 0) && config.usealienwhitelist)
 				var/datum/species/current_species = all_species[species]
-				if(!(current_species.spawn_flags & CAN_JOIN))
+				if(!(current_species.spawn_flags & SPECIES_CAN_JOIN))
 					continue
-				//else if((current_species.spawn_flags & SPECIES_IS_WHITELISTED) && !is_alien_whitelisted(preference_mob(),current_species))
-				//	continue
+				else if((current_species.spawn_flags & SPECIES_IS_WHITELISTED) && !is_alien_whitelisted(preference_mob(),current_species))
+					continue
 			species_to_pick += species
 
 		var/choice = input("Select a species to play as.") as null|anything in species_to_pick
@@ -186,22 +191,22 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 			ResetAllHair()
 
 			//reset hair colour and skin colour
-			//pref.r_hair = 0//hex2num(copytext(new_hair, 2, 4))
-			//pref.g_hair = 0//hex2num(copytext(new_hair, 4, 6))
-			//pref.b_hair = 0//hex2num(copytext(new_hair, 6, 8))
-			//reset skin colour
+			pref.r_hair = 0//hex2num(copytext(new_hair, 2, 4))
+			pref.g_hair = 0//hex2num(copytext(new_hair, 4, 6))
+			pref.b_hair = 0//hex2num(copytext(new_hair, 6, 8))
 			pref.s_tone = 0
 			pref.age = max(min(pref.age, mob_species.max_age), mob_species.min_age)
 
-			//reset_limbs() // Safety for species with incompatible manufacturers; easier than trying to do it case by case.
+			reset_limbs() // Safety for species with incompatible manufacturers; easier than trying to do it case by case.
+			pref.body_markings.Cut() // Basically same as above.
 
-			prune_occupation_prefs()
-			//pref.skills_allocated = pref.sanitize_skills(pref.skills_allocated)
+			//prune_occupation_prefs()
+			pref.skills_allocated = pref.sanitize_skills(pref.skills_allocated)
 
-			//pref.cultural_info = mob_species.default_cultural_info.Copy()
+			pref.cultural_info = mob_species.default_cultural_info.Copy()
 
-		return TOPIC_REFRESH_UPDATE_PREVIEW
-
+			return TOPIC_REFRESH_UPDATE_PREVIEW
+	*/
 	else if(href_list["hair_color"])
 		if(!has_flag(mob_species, HAS_HAIR_COLOR))
 			return TOPIC_NOACTION
@@ -211,20 +216,19 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 			return TOPIC_REFRESH_UPDATE_PREVIEW
 
 	else if(href_list["hair_style"])
-		mob_species = all_species[pref.species]
 		var/list/valid_hairstyles = mob_species.get_hair_styles()
 		var/new_h_style = input(user, "Choose your character's hair style:", CHARACTER_PREFERENCE_INPUT_TITLE, pref.h_style)  as null|anything in valid_hairstyles
 
+		mob_species = all_species[pref.species]
 		if(new_h_style && CanUseTopic(user) && (new_h_style in mob_species.get_hair_styles()))
 			pref.h_style = new_h_style
 			return TOPIC_REFRESH_UPDATE_PREVIEW
 
 	else if(href_list["facial_color"])
-		mob_species = all_species[pref.species]
-		if(!has_flag(mob_species, HAS_FACIAL_COLOR))
+		if(!has_flag(mob_species, HAS_HAIR_COLOR))
 			return TOPIC_NOACTION
 		var/new_facial = input(user, "Choose your character's facial-hair colour:", CHARACTER_PREFERENCE_INPUT_TITLE, pref.facial_color) as color|null
-		if(new_facial && has_flag(all_species[pref.species], HAS_FACIAL_COLOR) && CanUseTopic(user))
+		if(new_facial && has_flag(all_species[pref.species], HAS_HAIR_COLOR) && CanUseTopic(user))
 			pref.facial_color = new_facial
 			return TOPIC_REFRESH_UPDATE_PREVIEW
 
@@ -243,13 +247,13 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 			return TOPIC_REFRESH_UPDATE_PREVIEW
 
 	else if(href_list["skin_tone"])
-		mob_species = all_species[pref.species]
-		var/new_s_tone = input(user, "Choose your character's skin-tone. Lower numbers are lighter, higher are darker. Range: 1 to [mob_species.max_skin_tone]", CHARACTER_PREFERENCE_INPUT_TITLE, (-pref.s_tone) + 35) as num|null
-		//var/new_s_tone = input(user, "Choose your character's skin-tone. Lower numbers are lighter, higher are darker. Range: 1 to 220", CHARACTER_PREFERENCE_INPUT_TITLE, (-pref.s_tone) + 35) as num|null
+		//var/new_s_tone = input(user, "Choose your character's skin-tone. Lower numbers are lighter, higher are darker. Range: 1 to [mob_species.max_skin_tone()]", CHARACTER_PREFERENCE_INPUT_TITLE, (-pref.s_tone) + 35) as num|null
+		var/new_s_tone = input(user, "Choose your character's skin-tone. Lower numbers are lighter, higher are darker. Range: 1 to 225", CHARACTER_PREFERENCE_INPUT_TITLE, (-pref.s_tone) + 35) as num|null
 
+		mob_species = all_species[pref.species]
 		if(new_s_tone && CanUseTopic(user))
-			pref.s_tone = 35 - max(min(round(new_s_tone), mob_species.max_skin_tone), 1)
-			//pref.s_tone = 35 - max(min(round(new_s_tone), 220), 1)
+			//pref.s_tone = 35 - max(min(round(new_s_tone), mob_species.max_skin_tone()), 1)
+			pref.s_tone = 35 - max(min(round(new_s_tone), 220), 1)
 		return TOPIC_REFRESH_UPDATE_PREVIEW
 
 	else if(href_list["skin_color"])
