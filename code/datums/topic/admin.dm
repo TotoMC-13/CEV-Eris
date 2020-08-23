@@ -1635,8 +1635,8 @@
 
 	switch(input[keyword])
 		if("add")
-			notes_add(ckey, input["text"])
+			add_note(ckey, input["text"])
 		if("remove")
-			notes_remove(ckey, text2num(input["from"]), text2num(input["to"]))
+			remove_note(ckey, text2num(input["from"]), text2num(input["to"]))
 
-	source.notes_show(ckey)
+	show_note(ckey)

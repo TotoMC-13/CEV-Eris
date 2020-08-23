@@ -589,3 +589,13 @@ proc/TextPreview(var/string, var/len=40)
 	. = ""
 	for(var/i=1, i<=times, i++)
 		. += string
+
+//SQL Notes Procs
+
+/proc/clean_input(Message, Title, Default, mob/user=usr)
+	var/txt = input(user, Message, Title, Default) as text | null
+	if(txt)
+		return html_encode(txt)
+
+/proc/format_table_name(table as text)
+	return table

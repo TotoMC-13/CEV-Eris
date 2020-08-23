@@ -120,4 +120,8 @@ var/global/rollovercheck_last_timeofday = 0
 		i *= 2
 	while (world.tick_usage > min(TICK_LIMIT_TO_RUN, Master.current_ticklimit))
 
+//SQL Notes time
+/proc/SQLtime()
+	return time2text(world.realtime, "YYYY-MM-DD hh:mm:ss")
+
 #undef DELTA_CALC
