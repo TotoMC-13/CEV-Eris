@@ -130,10 +130,10 @@
 		output = navbar
 	if(target_ckey)
 		var/target_sql_ckey = ckey(target_ckey)
-		var/DBQuery/query_get_notes = dbcon.NewQuery("SELECT id, timestamp, notetext, adminckey, last_editor, server, crew_playtime FROM notes WHERE ckey = '[target_sql_ckey]' ORDER BY timestamp")
+		var/DBQuery/query_get_notes = dbcon.NewQuery("SELECT id, timestamp, notetext, adminckey, last_editor, server FROM notes WHERE ckey = '[target_sql_ckey]' ORDER BY timestamp")
 		if(!query_get_notes.Execute())
 			var/err = query_get_notes.ErrorMsg()
-			log_game("SQL ERROR obtaining ckey, notetext, adminckey, last_editor, server, crew_playtime from notes table. Error : \[[err]\]\n")
+			log_game("SQL ERROR obtaining ckey, notetext, adminckey, last_editor, server from notes table. Error : \[[err]\]\n")
 			return
 		output += "<h2><center>Notes of [target_ckey]</center></h2>"
 		if(!linkless)
@@ -183,10 +183,10 @@
 
 /proc/show_player_info_irc(var/key as text)
 	var/target_sql_ckey = ckey(key)
-	var/DBQuery/query_get_notes = dbcon.NewQuery("SELECT timestamp, notetext, adminckey, server, crew_playtime FROM notes WHERE ckey = '[target_sql_ckey]' ORDER BY timestamp")
+	var/DBQuery/query_get_notes = dbcon.NewQuery("SELECT timestamp, notetext, adminckey, server FROM notes WHERE ckey = '[target_sql_ckey]' ORDER BY timestamp")
 	if(!query_get_notes.Execute())
 		var/err = query_get_notes.ErrorMsg()
-		log_game("SQL ERROR obtaining timestamp, notetext, adminckey, server, crew_playtime from notes table. Error : \[[err]\]\n")
+		log_game("SQL ERROR obtaining timestamp, notetext, adminckey, server from notes table. Error : \[[err]\]\n")
 		return
 	var/output = " Info on [key]%0D%0A"
 	while(query_get_notes.NextRow())
